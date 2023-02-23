@@ -223,9 +223,9 @@ void ImuProcess::UndistortPcl(const MeasureGroup &meas, esekfom::esekf<state_ikf
   {
     auto &&head = *(it_imu);
     auto &&tail = *(it_imu + 1);
-    
+
     if (tail->header.stamp.toSec() < last_lidar_end_time_)    continue;
-    
+
     angvel_avr<<0.5 * (head->angular_velocity.x + tail->angular_velocity.x),
                 0.5 * (head->angular_velocity.y + tail->angular_velocity.y),
                 0.5 * (head->angular_velocity.z + tail->angular_velocity.z);
@@ -248,7 +248,7 @@ void ImuProcess::UndistortPcl(const MeasureGroup &meas, esekfom::esekf<state_ikf
     {
       dt = tail->header.stamp.toSec() - head->header.stamp.toSec();
     }
-    
+
     in.acc = acc_avr;
     in.gyro = angvel_avr;
     Q.block<3, 3>(0, 0).diagonal() = cov_gyr;
@@ -271,11 +271,11 @@ void ImuProcess::UndistortPcl(const MeasureGroup &meas, esekfom::esekf<state_ikf
   double note = pcl_end_time > imu_end_time ? 1.0 : -1.0;
   dt = note * (pcl_end_time - imu_end_time);
   kf_state.predict(dt, Q, in);
-  
+
   imu_state = kf_state.get_x();
   last_imu_ = meas.imu.back();
   last_lidar_end_time_ = pcl_end_time;
-  
+
   #ifdef DEBUG_PRINT
   esekfom::esekf<state_ikfom, 12, input_ikfom>::cov P = kf_state.get_P();
     cout<<"[ IMU Process ]: vel "<<imu_state.vel.transpose()<<" pos "<<imu_state.pos.transpose()<<" ba"<<imu_state.ba.transpose()<<" bg "<<imu_state.bg.transpose()<<endl;
@@ -304,11 +304,11 @@ void ImuProcess::UndistortPcl(const MeasureGroup &meas, esekfom::esekf<state_ikf
        * So if we want to compensate a point at timestamp-i to the frame-e
        * P_compensate = R_imu_e ^ T * (R_i * P_i + T_ei) where T_ei is represented in global frame */
       M3D R_i(R_imu * Exp(angvel_avr, dt));
-      
+
       V3D P_i(it_pcl->x, it_pcl->y, it_pcl->z);
       V3D T_ei(pos_imu + vel_imu * dt + 0.5 * acc_imu * dt * dt - imu_state.pos);
       V3D P_compensate = imu_state.offset_R_L_I.conjugate() * (imu_state.rot.conjugate() * (R_i * (imu_state.offset_R_L_I * P_i + imu_state.offset_T_L_I) + T_ei) - imu_state.offset_T_L_I);// not accurate!
-      
+
       // save Undistorted points and their rotation
       it_pcl->x = P_compensate(0);
       it_pcl->y = P_compensate(1);
@@ -341,15 +341,15 @@ void ImuProcess::Forward(const MeasureGroup &meas, StatesGroup &state_inout, dou
   M3D R_imu(state_inout.rot_end);
   //  last_state = state_inout;
   MD(DIM_STATE, DIM_STATE) F_x, cov_w;
-  
+
   double dt = 0;
   for (auto it_imu = v_imu.begin(); it_imu < (v_imu.end() - 1); it_imu++)
   {
     auto &&head = *(it_imu);
     auto &&tail = *(it_imu + 1);
-    
+
     if (tail->header.stamp.toSec() < last_lidar_end_time_)    continue;
-    
+
     angvel_avr<<0.5 * (head->angular_velocity.x + tail->angular_velocity.x),
                 0.5 * (head->angular_velocity.y + tail->angular_velocity.y),
                 0.5 * (head->angular_velocity.z + tail->angular_velocity.z);
@@ -496,7 +496,7 @@ void ImuProcess::Process(const LidarMeasureGroup &lidar_meas,  esekfom::esekf<st
     IMU_init(meas, kf_state, init_iter_num);
 
     imu_need_init_ = true;
-    
+
     last_imu_   = meas.imu.back();
 
     state_ikfom imu_state = kf_state.get_x();
@@ -536,7 +536,7 @@ void ImuProcess::Process(const LidarMeasureGroup &lidar_meas,  esekfom::esekf<st
   // }
 
   t3 = omp_get_wtime();
-  
+
   // cout<<"[ IMU Process ]: Time: "<<t3 - t1<<endl;
 }
 #else
@@ -554,7 +554,7 @@ void ImuProcess::Process(const LidarMeasureGroup &lidar_meas, StatesGroup &stat,
     IMU_init(meas, stat, init_iter_num);
 
     imu_need_init_ = true;
-    
+
     last_imu_   = meas.imu.back();
 
     if (init_iter_num > MAX_INI_COUNT)
@@ -584,7 +584,9 @@ void ImuProcess::Process(const LidarMeasureGroup &lidar_meas, StatesGroup &stat,
     *cur_pcl_un_ = *(lidar_meas.lidar);
     sort(cur_pcl_un_->points.begin(), cur_pcl_un_->points.end(), time_list);
     const double &pcl_beg_time = lidar_meas.lidar_beg_time;
-    const double &pcl_end_time = pcl_beg_time + lidar_meas.lidar->points.back().curvature / double(1000);
+    const double &pcl_end_time = lidar_meas.lidar->points.back().curvature==0.0?
+                                 lidar_meas.lidar_sec_time:
+                                 pcl_beg_time + lidar_meas.lidar->points.back().curvature / double(1000);
     Forward(meas, stat, pcl_beg_time, pcl_end_time);
     // cout<<"[ IMU Process ]: Process lidar from "<<pcl_beg_time<<" to "<<pcl_end_time<<", " \
     //        <<meas.imu.size()<<" imu msgs from "<<imu_beg_time<<" to "<<imu_end_time<<endl;
@@ -616,7 +618,7 @@ void ImuProcess::Process(const LidarMeasureGroup &lidar_meas, StatesGroup &stat,
   // }
 
   t3 = omp_get_wtime();
-  
+
   // cout<<"[ IMU Process ]: Time: "<<t3 - t1<<endl;
 }
 
@@ -632,15 +634,17 @@ void ImuProcess::UndistortPcl(LidarMeasureGroup &lidar_meas, StatesGroup &state_
   const double &imu_end_time = v_imu.back()->header.stamp.toSec();
   const double pcl_beg_time = MAX(lidar_meas.lidar_beg_time, lidar_meas.last_update_time);
   // const double &pcl_beg_time = meas.lidar_beg_time;
-  
+
   /*** sort point clouds by offset time ***/
   pcl_out.clear();
   auto pcl_it = lidar_meas.lidar->points.begin() + lidar_meas.lidar_scan_index_now;
-  auto pcl_it_end = lidar_meas.lidar->points.end(); 
-  const double pcl_end_time = lidar_meas.is_lidar_end? 
-                                        lidar_meas.lidar_beg_time + lidar_meas.lidar->points.back().curvature / double(1000):
-                                        lidar_meas.lidar_beg_time + lidar_meas.measures.back().img_offset_time;
-  const double pcl_offset_time = lidar_meas.is_lidar_end? 
+  auto pcl_it_end = lidar_meas.lidar->points.end();
+  double pcl_end_time = 0;
+  if(lidar_meas.is_lidar_end)
+    pcl_end_time = lidar_meas.lidar->points.back().curvature != 0.0 ? lidar_meas.lidar_beg_time + lidar_meas.lidar->points.back().curvature / double(1000):lidar_meas.lidar_sec_time;
+  else
+    pcl_end_time = lidar_meas.lidar_beg_time + lidar_meas.measures.back().img_offset_time;
+  const double pcl_offset_time = lidar_meas.is_lidar_end?
                                         (pcl_end_time - lidar_meas.lidar_beg_time) * double(1000):
                                         0.0;
   while (pcl_it != pcl_it_end && pcl_it->curvature <= pcl_offset_time)
@@ -670,15 +674,15 @@ void ImuProcess::UndistortPcl(LidarMeasureGroup &lidar_meas, StatesGroup &state_
   V3D acc_imu(acc_s_last), angvel_avr(angvel_last), acc_avr, vel_imu(state_inout.vel_end), pos_imu(state_inout.pos_end);
   M3D R_imu(state_inout.rot_end);
   MD(DIM_STATE, DIM_STATE) F_x, cov_w;
-  
+
   double dt = 0;
   for (auto it_imu = v_imu.begin(); it_imu != v_imu.end()-1 ; it_imu++)
   {
     auto &&head = *(it_imu);
     auto &&tail = *(it_imu + 1);
-    
+
     if (tail->header.stamp.toSec() < last_lidar_end_time_)    continue;
-    
+
     angvel_avr<<0.5 * (head->angular_velocity.x + tail->angular_velocity.x),
                 0.5 * (head->angular_velocity.y + tail->angular_velocity.y),
                 0.5 * (head->angular_velocity.z + tail->angular_velocity.z);
@@ -704,7 +708,7 @@ void ImuProcess::UndistortPcl(LidarMeasureGroup &lidar_meas, StatesGroup &state_
     {
       dt = tail->header.stamp.toSec() - head->header.stamp.toSec();
     }
-    
+
     /* covariance propagation */
     M3D acc_avr_skew;
     M3D Exp_f   = Exp(angvel_avr, dt);
@@ -857,6 +861,7 @@ void ImuProcess::Process2(LidarMeasureGroup &lidar_meas, StatesGroup &stat, Poin
     return;
   }
   UndistortPcl(lidar_meas, stat, *cur_pcl_un_);
+  cout<<lidar_meas.lidar->size()<<"  "<<cur_pcl_un_->size()<<endl;
 }
 
 #endif

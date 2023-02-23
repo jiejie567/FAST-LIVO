@@ -160,6 +160,7 @@ struct MeasureGroup
 struct LidarMeasureGroup
 {
     double lidar_beg_time;
+    double lidar_sec_time;
     double last_update_time;
     PointCloudXYZI::Ptr lidar;
     std::deque<struct MeasureGroup> measures;
@@ -168,6 +169,7 @@ struct LidarMeasureGroup
     LidarMeasureGroup()
     {
         lidar_beg_time = 0.0;
+        lidar_sec_time = 0.0;
         is_lidar_end = false;
         this->lidar.reset(new PointCloudXYZI());
         std::deque<struct MeasureGroup> ().swap(this->measures);
@@ -187,7 +189,7 @@ struct LidarMeasureGroup
             }
             std::cout<<"img_time:"<<setprecision(20)<<it->img_offset_time<<endl;
         }
-        std::cout<<"is_lidar_end:"<<this->is_lidar_end<<"lidar_end_time:"<<this->lidar->points.back().curvature/double(1000)<<endl;
+        std::cout<<"is_lidar_end:"<<this->is_lidar_end<<"  lidar_end_time:"<<this->lidar->points.back().curvature/double(1000)<<endl;
         std::cout<<"lidar_.points.size(): "<<this->lidar->points.size()<<endl<<endl;
     };
 };

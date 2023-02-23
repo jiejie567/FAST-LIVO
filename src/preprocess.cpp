@@ -56,7 +56,11 @@ void Preprocess::process(const sensor_msgs::PointCloud2::ConstPtr &msg, PointClo
   case VELO16:
     velodyne_handler(msg);
     break;
-  
+
+  case L515:
+    l515_handler(msg);
+    break;
+
   default:
     printf("Error LiDAR Type");
     break;
@@ -423,6 +427,28 @@ void Preprocess::velodyne_handler(const sensor_msgs::PointCloud2::ConstPtr &msg)
     // pub_func(pl_surf, pub_full, msg->header.stamp);
     // pub_func(pl_surf, pub_surf, msg->header.stamp);
     // pub_func(pl_surf, pub_corn, msg->header.stamp);
+}
+
+void Preprocess::l515_handler(const sensor_msgs::PointCloud2::ConstPtr &msg) {
+  pl_surf.clear();
+  pcl::PointCloud<pcl::PointXYZINormal> pl_orig;
+  pcl::fromROSMsg(*msg, pl_orig);
+  std::vector<int> tmp;
+  int plsize = pl_orig.points.size();
+  // pl_surf.reserve(plsize);
+  for (int i = 0; i < pl_orig.size(); i++) {
+      if(isnan(pl_orig.points[i].z)){
+          continue;
+      }
+    PointType added_pt;
+    added_pt.x = pl_orig.points[i].x;
+    added_pt.y = pl_orig.points[i].y;
+    added_pt.z = pl_orig.points[i].z;
+    added_pt.intensity = pl_orig.points[i].intensity;
+    if (i % point_filter_num == 0) {
+        pl_surf.push_back(added_pt);
+    }
+  }
 }
 
 void Preprocess::give_feature(pcl::PointCloud<PointType> &pl, vector<orgtype> &types)

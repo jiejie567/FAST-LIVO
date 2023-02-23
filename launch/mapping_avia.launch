@@ -3,9 +3,8 @@
 
 	<arg name="rviz" default="true" />
 
-	<!-- <arg name="bag_name" value="/media/chunran/Chunran/rosbag/mtr/xu2_new.bag"/> -->
-
-	<!-- <node pkg="rosbag" type="play" name="rosbag" args="-r 1.0 -s 0.0 $(arg bag_name)"/> -->
+	<node pkg="rosbag" type="play" name="rosbag_play" args="--clock -r 1 /home/jeff/Downloads/Dataset/fast_livo/hku1.bag"/>
+	<param name="/use_sim_time" value="true" />
 
 	<rosparam command="load" file="$(find fast_livo)/config/avia_resize.yaml" />
 
