@@ -644,7 +644,8 @@ void ImuProcess::UndistortPcl(LidarMeasureGroup &lidar_meas, StatesGroup &state_
     pcl_end_time = lidar_meas.lidar->points.back().curvature != 0.0 ? lidar_meas.lidar_beg_time + lidar_meas.lidar->points.back().curvature / double(1000):lidar_meas.lidar_sec_time;
   else
     pcl_end_time = lidar_meas.lidar_beg_time + lidar_meas.measures.back().img_offset_time;
-  const double pcl_offset_time = lidar_meas.is_lidar_end?
+
+    const double pcl_offset_time = lidar_meas.is_lidar_end?
                                         (pcl_end_time - lidar_meas.lidar_beg_time) * double(1000):
                                         0.0;
   while (pcl_it != pcl_it_end && pcl_it->curvature <= pcl_offset_time)
@@ -653,6 +654,8 @@ void ImuProcess::UndistortPcl(LidarMeasureGroup &lidar_meas, StatesGroup &state_
     pcl_it++;
     lidar_meas.lidar_scan_index_now++;
   }
+  if(lidar_meas.lidar->points.back().curvature == 0.0)
+    copyPointCloud(*lidar_meas.lidar,pcl_out);
   // cout<<"pcl_offset_time:  "<<pcl_offset_time<<"pcl_it->curvature:  "<<pcl_it->curvature<<endl;
   // cout<<"lidar_meas.lidar_scan_index_now:"<<lidar_meas.lidar_scan_index_now<<endl;
   lidar_meas.last_update_time = pcl_end_time;

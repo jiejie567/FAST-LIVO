@@ -1,7 +1,7 @@
 <launch>
 
 	<arg name="rviz" default="true" />
-	<node pkg="rosbag" type="play" name="rosbag_play" args="--clock -r 1 /home/jeff/Downloads/Dataset/NTU_VIRAL/eee_01/eee_01.bag"/>
+	<node pkg="rosbag" type="play" name="rosbag_play" args="--clock -r 1 /home/jeff/Downloads/dataset/NTU_VIRAL/eee_01/eee_01.bag"/>
 	<param name="/use_sim_time" value="true" />
 	<rosparam command="load" file="$(find fast_livo)/config/NTU_VIRAL.yaml" />
 

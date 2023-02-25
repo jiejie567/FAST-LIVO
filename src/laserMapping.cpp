@@ -1272,7 +1272,6 @@ int main(int argc, char** argv)
             rate.sleep();
             continue;
         }
-
         /*** Packaged got ***/
         if (flg_reset)
         {
@@ -1759,7 +1758,7 @@ int main(int argc, char** argv)
         kdtree_incremental_time = t5 - t3 + readd_time;
         /******* Publish points *******/
         ROS_ERROR("1760last_feats_undistort: %d", last_feats_undistort->size());
-        PointCloudXYZI::Ptr laserCloudFullRes(dense_map_en ? (feats_undistort->empty() ?last_feats_undistort : feats_undistort) : feats_down_body);
+        PointCloudXYZI::Ptr laserCloudFullRes(dense_map_en ? (feats_undistort->empty() ? feats_undistort : feats_undistort) : feats_down_body);
         int size = laserCloudFullRes->points.size();
         PointCloudXYZI::Ptr laserCloudWorld( new PointCloudXYZI(size, 1));
 
