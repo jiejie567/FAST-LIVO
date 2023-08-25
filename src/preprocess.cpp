@@ -1,3 +1,4 @@
+#include <pcl/filters/voxel_grid.h>
 #include "preprocess.h"
 
 #define RETURN0     0x00
@@ -429,26 +430,29 @@ void Preprocess::velodyne_handler(const sensor_msgs::PointCloud2::ConstPtr &msg)
     // pub_func(pl_surf, pub_corn, msg->header.stamp);
 }
 
+std::random_device rd;
+std::default_random_engine eng(rd());
+
 void Preprocess::l515_handler(const sensor_msgs::PointCloud2::ConstPtr &msg) {
-  pl_surf.clear();
-  pcl::PointCloud<pcl::PointXYZINormal> pl_orig;
-  pcl::fromROSMsg(*msg, pl_orig);
-  std::vector<int> tmp;
-  int plsize = pl_orig.points.size();
-  // pl_surf.reserve(plsize);
-  for (int i = 0; i < pl_orig.size(); i++) {
-      if(isnan(pl_orig.points[i].z)){
-          continue;
-      }
-    PointType added_pt;
-    added_pt.x = pl_orig.points[i].x;
-    added_pt.y = pl_orig.points[i].y;
-    added_pt.z = pl_orig.points[i].z;
-    added_pt.intensity = pl_orig.points[i].intensity;
-    if (i % point_filter_num == 0) {
+    pl_surf.clear();
+    pcl::PointCloud<pcl::PointXYZINormal> pl_orig;
+    pcl::fromROSMsg(*msg, pl_orig);
+    std::vector<int> tmp;
+    int plsize = pl_orig.points.size();
+    static std::uniform_int_distribution<int> distr(1, point_filter_num);
+
+    pl_surf.reserve(plsize);
+    for (int i = 0; i < pl_orig.size(); i++) {
+        if (distr(eng) != 1||isnan(pl_orig.points[i].z)) {
+            continue;
+        }
+        PointType added_pt;
+        added_pt.x = pl_orig.points[i].x;
+        added_pt.y = pl_orig.points[i].y;
+        added_pt.z = pl_orig.points[i].z;
+        added_pt.intensity = pl_orig.points[i].intensity;
         pl_surf.push_back(added_pt);
     }
-  }
 }
 
 void Preprocess::give_feature(pcl::PointCloud<PointType> &pl, vector<orgtype> &types)

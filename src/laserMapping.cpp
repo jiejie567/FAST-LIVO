@@ -585,7 +585,7 @@ bool sync_packages(LidarMeasureGroup &meas)
     // cout<<"img_time_buffer.front(): "<<img_time_buffer.front()<<"lidar_end_time: "<<lidar_end_time<<"last_timestamp_imu: "<<last_timestamp_imu<<endl;
     if ((img_time_buffer.front()>lidar_end_time) )
     { // has img topic, but img topic timestamp larger than lidar end time, process lidar topic.
-        if (last_timestamp_imu < lidar_end_time+0.006)
+        if (last_timestamp_imu < lidar_end_time+0.02)
         {
             // ROS_ERROR("out sync");
             return false;
@@ -613,7 +613,7 @@ bool sync_packages(LidarMeasureGroup &meas)
         double img_start_time = img_time_buffer.front(); // process img topic, record timestamp
         if (last_timestamp_imu < img_start_time) 
         {
-            ROS_ERROR("out sync");
+            // ROS_ERROR("out sync");
             return false;
         }
         double imu_time = imu_buffer.front()->header.stamp.toSec();
@@ -1283,7 +1283,7 @@ int main(int argc, char** argv)
 
         // double t0,t1,t2,t3,t4,t5,match_start, match_time, solve_start, solve_time, svd_time;
         double t0,t1,t2,t3,t4,t5,match_start, solve_start, svd_time;
-
+        cout<<"is_lidar_end? "<<LidarMeasures.is_lidar_end<<endl;
         match_time = kdtree_search_time = kdtree_search_counter = solve_time = solve_const_H_time = svd_time   = 0;
         t0 = omp_get_wtime();
         #ifdef USE_IKFOM
@@ -1292,9 +1292,8 @@ int main(int argc, char** argv)
         pos_lid = state_point.pos + state_point.rot * state_point.offset_T_L_I;
         #else
         copyPointCloud(*feats_undistort,*last_feats_undistort);
-        ROS_ERROR("1296feats_undistort: %d, last_feats_undistort: %d", feats_undistort->size(),last_feats_undistort->size());
         p_imu->Process2(LidarMeasures, state, feats_undistort);
-        ROS_ERROR("1298feats_undistort: %d, last_feats_undistort: %d", feats_undistort->size(),last_feats_undistort->size());
+        cout<<"feats_undistort nums: "<<feats_undistort->size()<<endl;
         state_propagat = state;
         #endif
 
@@ -1347,7 +1346,6 @@ int main(int argc, char** argv)
                 //     pointBodyToWorld(&feats_undistort->points[i], \
                 //                         &laserCloudWorld->points[i]);
                 // }
-                ROS_ERROR("1350pcl_wait_pub  not lidar end: %d", pcl_wait_pub->size());
 
                 lidar_selector->detect(LidarMeasures.measures.back().img, pcl_wait_pub);
 
@@ -1757,7 +1755,6 @@ int main(int argc, char** argv)
         t5 = omp_get_wtime();
         kdtree_incremental_time = t5 - t3 + readd_time;
         /******* Publish points *******/
-        ROS_ERROR("1760last_feats_undistort: %d", last_feats_undistort->size());
         PointCloudXYZI::Ptr laserCloudFullRes(dense_map_en ? (feats_undistort->empty() ? feats_undistort : feats_undistort) : feats_down_body);
         int size = laserCloudFullRes->points.size();
         PointCloudXYZI::Ptr laserCloudWorld( new PointCloudXYZI(size, 1));
@@ -1767,7 +1764,6 @@ int main(int argc, char** argv)
             RGBpointBodyToWorld(&laserCloudFullRes->points[i], \
                                 &laserCloudWorld->points[i]);
         }
-        ROS_ERROR("1771pcl_wait_pub =laserCloudWorld =feats_undistort: %d", feats_undistort->size());
         *pcl_wait_pub = *laserCloudWorld;
 
         publish_frame_world(pubLaserCloudFullRes);

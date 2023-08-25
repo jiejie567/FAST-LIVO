@@ -1072,7 +1072,7 @@ void LidarSelector::detect(cv::Mat img, PointCloudXYZI::Ptr pg)
     
     // computeH = ekf_time = 0.0;
     
-    ComputeJ(img);
+    // ComputeJ(img);
 
     double t5 = omp_get_wtime();
 
