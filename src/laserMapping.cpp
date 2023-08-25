@@ -1280,8 +1280,8 @@ int main(int argc, char** argv)
         // double t0,t1,t2,t3,t4,t5,match_start, match_time, solve_start, solve_time, svd_time;
         double t0,t1,t2,t3,t4,t5,match_start, solve_start, svd_time;
 
-        match_time = kdtree_search_time = kdtree_search_counter = solve_time = solve_const_H_time = svd_time   = 0;
-        t0 = omp_get_wtime();
+         match_time = kdtree_search_time = kdtree_search_counter = solve_time = solve_const_H_time = svd_time   = 0;
+         t0 = omp_get_wtime();
         #ifdef USE_IKFOM
         p_imu->Process(LidarMeasures, kf, feats_undistort);
         state_point = kf.get_x();
@@ -1312,7 +1312,7 @@ int main(int argc, char** argv)
         {
             int size = feats_undistort->points.size();
         }
-        fast_lio_is_ready = true;
+          fast_lio_is_ready = true;
         flg_EKF_inited = (LidarMeasures.lidar_beg_time - first_lidar_time) < INIT_TIME ? \
                         false : true;
 
@@ -1386,7 +1386,7 @@ int main(int argc, char** argv)
                 fout_out << setw(20) << LidarMeasures.last_update_time - first_lidar_time << " " << euler_cur.transpose()*57.3 << " " << state.pos_end.transpose() << " " << state.vel_end.transpose() \
                 <<" "<<state.bias_g.transpose()<<" "<<state.bias_a.transpose()<<" "<<state.gravity.transpose()<<" "<<feats_undistort->points.size()<<endl;
             }
-            continue;
+            // continue;
         }
 
         /*** Segment the map in lidar FOV ***/
