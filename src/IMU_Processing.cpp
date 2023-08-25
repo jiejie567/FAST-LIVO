@@ -649,10 +649,6 @@ void ImuProcess::UndistortPcl(LidarMeasureGroup &lidar_meas, StatesGroup &state_
     pcl_it++;
     lidar_meas.lidar_scan_index_now++;
   }
-  cout<<"xxx"<<lidar_meas.lidar->points.size()<<"  "<<pcl_out.size()<<endl;
-  // cout<<"pcl_offset_time:  "<<pcl_offset_time<<"pcl_it->curvature:  "<<pcl_it->curvature<<endl;
-   cout<<"lidar_meas.lidar_scan_index_now:"<<lidar_meas.lidar_scan_index_now<<endl;
-  cout<<"is lidar end ?:"<<lidar_meas.is_lidar_end<<endl;
 
   lidar_meas.last_update_time = pcl_end_time;
   if (lidar_meas.is_lidar_end)
@@ -785,14 +781,10 @@ void ImuProcess::UndistortPcl(LidarMeasureGroup &lidar_meas, StatesGroup &state_
   //   cout<<"Undistorted pcl_out.size: "<<pcl_out.size()
   //          <<"lidar_meas.size: "<<lidar_meas.lidar->points.size()<<endl;
     if (pcl_out.points.size()<1) return;
-    cout<<"IMUpose。size "<<IMUpose.size()<<"  pcl_out.size(): "<<pcl_out.points.size()<<endl;
-
     /*** undistort each lidar point (backward propagation) ***/
   auto it_pcl = pcl_out.points.end() - 1;
   for (auto it_kp = IMUpose.end() - 1; it_kp != IMUpose.begin(); it_kp--)
   {
-    int cnt = 0;
-
     auto head = it_kp - 1;
     auto tail = it_kp;
     R_imu<<MAT_FROM_ARRAY(head->rot);
@@ -818,11 +810,8 @@ void ImuProcess::UndistortPcl(LidarMeasureGroup &lidar_meas, StatesGroup &state_
       it_pcl->x = P_compensate(0);
       it_pcl->y = P_compensate(1);
       it_pcl->z = P_compensate(2);
-      cnt++;
       if (it_pcl == pcl_out.points.begin()) break;
     }
-      cout<<"***"<<cnt<<endl;
-
     if (it_pcl == pcl_out.points.begin()) break;
   }
 }
