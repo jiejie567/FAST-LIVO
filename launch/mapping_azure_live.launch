@@ -1,8 +1,6 @@
 <launch>
     <node pkg="tf" type="static_transform_publisher" name="word2camera"  args="0 0 0 0 3.14 0 /world /camera_init 100" />
 	<arg name="rviz" default="true" />
-    <node pkg="rosbag" type="play" name="rosbag_play" args="--clock -r 0.5 /home/jeff/Desktop/2023-08-28-14-25-59.bag"/>
-    <param name="/use_sim_time" value="true" />
 
 	<rosparam command="load" file="$(find fast_livo)/config/azure_lidar.yaml" />
 	<node pkg="fast_livo" type="fastlivo_mapping" name="laserMapping" output="screen" >

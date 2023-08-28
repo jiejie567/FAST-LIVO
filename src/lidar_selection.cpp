@@ -370,10 +370,10 @@ void LidarSelector::addFromSparseMap(cv::Mat img, PointCloudXYZI::Ptr pg)
     unordered_map<VOXEL_KEY, float>().swap(sub_feat_map);
     unordered_map<int, Warp*>().swap(Warp_map);
 
-    // cv::Mat depth_img = cv::Mat::zeros(height, width, CV_32FC1);
-    // float* it = (float*)depth_img.data;
+    cv::Mat depth_img = cv::Mat::zeros(height, width, CV_32FC1);
+    float* it = (float*)depth_img.data;
+    // cv::Mat it[height*width] = {0.0};
 
-    float it[height*width] = {0.0};
 
     double t_insert, t_depth, t_position;
     t_insert=t_depth=t_position=0;
@@ -1008,9 +1008,9 @@ void LidarSelector::display_keypatch(double time)
         cv::Point2f pf;
         pf = cv::Point2f(pc[0], pc[1]); 
         if (sub_sparse_map->errors[i]<8000) // 5.5
-            cv::circle(img_cp, pf, 4, cv::Scalar(0, 255, 0), -1, 8); // Green Sparse Align tracked
+            cv::circle(img_cp, pf, 8, cv::Scalar(0, 255, 0), -1, 8); // Green Sparse Align tracked
         else
-            cv::circle(img_cp, pf, 4, cv::Scalar(255, 0, 0), -1, 8); // Blue Sparse Align tracked
+            cv::circle(img_cp, pf, 8, cv::Scalar(255, 0, 0), -1, 8); // Blue Sparse Align tracked
     }   
     std::string text = std::to_string(int(1/time))+" HZ";
     cv::Point2f origin;
@@ -1072,7 +1072,7 @@ void LidarSelector::detect(cv::Mat img, PointCloudXYZI::Ptr pg)
     
     // computeH = ekf_time = 0.0;
     
-    // ComputeJ(img);
+     ComputeJ(img);
 
     double t5 = omp_get_wtime();
 
