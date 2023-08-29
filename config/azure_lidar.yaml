@@ -1,24 +1,24 @@
 feature_extract_enable : 0
-point_filter_num : 3
+point_filter_num : 30
 max_iteration : 10
 dense_map_enable : 1
-filter_size_surf : 0.08
-filter_size_map : 0.08
+filter_size_surf : 0.1
+filter_size_map : 0.1
 cube_side_length : 20
 debug : 0
 grid_size : 80
 patch_size : 8
 img_enable : 1
-lidar_enable : 0
+lidar_enable : 1
 outlier_threshold : 300 # 78 100 156
 ncc_en: false
 ncc_thre: 0
 img_point_cov : 1000 # 1000
 laser_point_cov : 0.001 # 0.001
-cam_fx: 608.327
-cam_fy: 608.308
-cam_cx: 639.605
-cam_cy: 366.594
+cam_fx: 607.778
+cam_fy: 607.751
+cam_cx: 636.636
+cam_cy: 368.102
 
 common:
     lid_topic:  "/points2"
@@ -41,7 +41,7 @@ mapping:
 camera:
     # img_topic: /usb_cam/image_raw
     # img_topic:  /camera/image_color
-    img_topic: /rgb/image_raw
+    img_topic: /rgb/image_rect_color
     #xiyuan
     Rcl: [0.999946, 0.0102355, 0.00196952,
         -0.0103861, 0.994365,  0.105501,
