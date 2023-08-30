@@ -1389,6 +1389,8 @@ int main(int argc, char** argv)
             // continue;
         }
 
+        state_propagat = state;
+
         /*** Segment the map in lidar FOV ***/
         #ifndef USE_ikdforest            
             lasermap_fov_segment();
@@ -1660,6 +1662,7 @@ int main(int argc, char** argv)
                 }
                 else
                 {
+                    solution.setZero();
                     auto &&Hsub_T = Hsub.transpose();
                     auto &&HTz = Hsub_T * meas_vec;
                     H_T_H.block<6,6>(0,0) = Hsub_T * Hsub;
