@@ -353,7 +353,7 @@ void LidarSelector::createPatchFromPatchWithBorder(float* patch_with_border, flo
 void LidarSelector::addFromSparseMap(cv::Mat img, PointCloudXYZI::Ptr pg)
 {
     if(feat_map.size()<=0) return;
-    // double ts0 = omp_get_wtime();
+    double ts0 = omp_get_wtime();
 
     pg_down->reserve(feat_map.size());
     downSizeFilter.setInputCloud(pg);
@@ -380,8 +380,8 @@ void LidarSelector::addFromSparseMap(cv::Mat img, PointCloudXYZI::Ptr pg)
 
     int loc_xyz[3];
 
-    // printf("A0. initial depthmap: %.6lf \n", omp_get_wtime() - ts0);
-    // double ts1 = omp_get_wtime();
+    printf("A0. initial depthmap: %.6lf \n", omp_get_wtime() - ts0);
+    double ts1 = omp_get_wtime();
 
     for(int i=0; i<pg_down->size(); i++)
     {
@@ -427,7 +427,7 @@ void LidarSelector::addFromSparseMap(cv::Mat img, PointCloudXYZI::Ptr pg)
     // printf("A. projection: %.6lf \n", omp_get_wtime() - ts0);
     
 
-    // double t1 = omp_get_wtime();
+    double t1 = omp_get_wtime();
 
     for(auto& iter : sub_feat_map)
     {   
@@ -475,9 +475,9 @@ void LidarSelector::addFromSparseMap(cv::Mat img, PointCloudXYZI::Ptr pg)
         } 
     }
         
-    // double t2 = omp_get_wtime();
+    double t2 = omp_get_wtime();
 
-    // cout<<"B. feat_map.find: "<<t2-t1<<endl;
+    cout<<"B. feat_map.find: "<<t2-t1<<endl;
 
     double t_2, t_3, t_4, t_5;
     t_2=t_3=t_4=t_5=0;
@@ -486,7 +486,7 @@ void LidarSelector::addFromSparseMap(cv::Mat img, PointCloudXYZI::Ptr pg)
     { 
         if (grid_num[i]==TYPE_MAP) //&& map_value[i]>10)
         {
-            // double t_1 = omp_get_wtime();
+            double t_1 = omp_get_wtime();
 
             PointPtr pt = voxel_points_[i];
 
@@ -518,21 +518,21 @@ void LidarSelector::addFromSparseMap(cv::Mat img, PointCloudXYZI::Ptr pg)
             }
             if(depth_continous) continue;
 
-            // t_2 += omp_get_wtime() - t_1;
+            t_2 += omp_get_wtime() - t_1;
 
-            // t_1 = omp_get_wtime();
+            t_1 = omp_get_wtime();
             
             FeaturePtr ref_ftr;
 
             if(!pt->getCloseViewObs(new_frame_->pos(), ref_ftr, pc)) continue;
 
-            // t_3 += omp_get_wtime() - t_1;
+            t_3 += omp_get_wtime() - t_1;
 
             float* patch_wrap = new float[patch_size_total*3];
 
             patch_wrap = ref_ftr->patch;
 
-            // t_1 = omp_get_wtime();
+            t_1 = omp_get_wtime();
            
             int search_level;
             Matrix2d A_cur_ref_zero;
@@ -554,9 +554,9 @@ void LidarSelector::addFromSparseMap(cv::Mat img, PointCloudXYZI::Ptr pg)
                 Warp_map[ref_ftr->id_] = ot;
             }
 
-            // t_4 += omp_get_wtime() - t_1;
+            t_4 += omp_get_wtime() - t_1;
 
-            // t_1 = omp_get_wtime();
+            t_1 = omp_get_wtime();
 
             for(int pyramid_level=0; pyramid_level<=0; pyramid_level++)
             {                
@@ -592,9 +592,9 @@ void LidarSelector::addFromSparseMap(cv::Mat img, PointCloudXYZI::Ptr pg)
             // t_5 += omp_get_wtime() - t_1;
         }
     }
-    // double t3 = omp_get_wtime();
-    // cout<<"C. addSubSparseMap: "<<t3-t2<<endl;
-    // cout<<"depthcontinuous: C1 "<<t_2<<" C2 "<<t_3<<" C3 "<<t_4<<" C4 "<<t_5<<endl;
+    double t3 = omp_get_wtime();
+    cout<<"C. addSubSparseMap: "<<t3-t2<<endl;
+    cout<<"depthcontinuous: C1 "<<t_2<<" C2 "<<t_3<<" C3 "<<t_4<<" C4 "<<t_5<<endl;
     printf("[ VIO ]: choose %d points from sub_sparse_map.\n", int(sub_sparse_map->index.size()));
 }
 
@@ -1008,9 +1008,9 @@ void LidarSelector::display_keypatch(double time)
         cv::Point2f pf;
         pf = cv::Point2f(pc[0], pc[1]); 
         if (sub_sparse_map->errors[i]<8000) // 5.5
-            cv::circle(img_cp, pf, 4, cv::Scalar(0, 255, 0), -1, 8); // Green Sparse Align tracked
+            cv::circle(img_cp, pf, 4, cv::Scalar(0, 255, 0), -1, img_cp.cols/80); // Green Sparse Align tracked
         else
-            cv::circle(img_cp, pf, 4, cv::Scalar(255, 0, 0), -1, 8); // Blue Sparse Align tracked
+            cv::circle(img_cp, pf, 4, cv::Scalar(255, 0, 0), -1, img_cp.cols/80); // Blue Sparse Align tracked
     }   
     std::string text = std::to_string(int(1/time))+" HZ";
     cv::Point2f origin;
@@ -1062,17 +1062,26 @@ void LidarSelector::detect(cv::Mat img, PointCloudXYZI::Ptr pg)
 
     double t1 = omp_get_wtime();
 
-    addFromSparseMap(img, pg);
+    if(1)
+    {
+        addFromSparseMap(img, pg);
+    }
 
     double t3 = omp_get_wtime();
 
-    addSparseMap(img, pg);
+    if(1)
+    {
+        addSparseMap(img, pg);
+    }
 
     double t4 = omp_get_wtime();
     
     // computeH = ekf_time = 0.0;
-    
-    ComputeJ(img);
+    // if(1)
+    if(need_v)
+    {
+        ComputeJ(img);
+    }
 
     double t5 = omp_get_wtime();
 
@@ -1084,7 +1093,7 @@ void LidarSelector::detect(cv::Mat img, PointCloudXYZI::Ptr pg)
     ave_total = ave_total * (frame_cont - 1) / frame_cont + (t2 - t1) / frame_cont;
 
     printf("[ VIO ]: time: addFromSparseMap: %0.6f addSparseMap: %0.6f ComputeJ: %0.6f addObservation: %0.6f total time: %0.6f ave_total: %0.6f.\n"
-    , t3-t1, t4-t3, t5-t4, t2-t5, t2-t1);
+    , t3-t1, t4-t3, t5-t4, t2-t5, t2-t1, ave_total);
 
     display_keypatch(t2-t1);
 } 

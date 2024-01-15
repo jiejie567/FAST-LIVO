@@ -128,6 +128,7 @@ double match_time = 0, solve_time = 0, solve_const_H_time = 0;
 
 bool lidar_pushed, flg_reset, flg_exit = false;
 bool ncc_en;
+bool need_v= false;
 int dense_map_en = 1;
 int img_en = 1;
 int lidar_en = 1;
@@ -1215,6 +1216,7 @@ int main(int argc, char** argv)
     lidar_selector->cx = cam_cx;
     lidar_selector->cy = cam_cy;
     lidar_selector->ncc_en = ncc_en;
+    lidar_selector->need_v = need_v;
     lidar_selector->init();
     
     p_imu->set_extrinsic(extT, extR);
@@ -1340,8 +1342,15 @@ int main(int argc, char** argv)
                 //     pointBodyToWorld(&feats_undistort->points[i], \
                 //                         &laserCloudWorld->points[i]);
                 // }
-
+                lidar_selector->need_v = need_v;
+                if(need_v)
+                {
+                    ROS_ERROR("need V!");
+                }
                 lidar_selector->detect(LidarMeasures.measures.back().img, pcl_wait_pub);
+                need_v = false;
+                need_v = true;
+
                 // int size = lidar_selector->map_cur_frame_.size();
                 int size_sub = lidar_selector->sub_map_cur_frame_.size();
                 
@@ -1386,7 +1395,7 @@ int main(int argc, char** argv)
                 fout_out << setw(20) << LidarMeasures.last_update_time - first_lidar_time << " " << euler_cur.transpose()*57.3 << " " << state.pos_end.transpose() << " " << state.vel_end.transpose() \
                 <<" "<<state.bias_g.transpose()<<" "<<state.bias_a.transpose()<<" "<<state.gravity.transpose()<<" "<<feats_undistort->points.size()<<endl;
             }
-            // continue;
+            continue;
         }
 
         state_propagat = state;
@@ -1673,14 +1682,42 @@ int main(int argc, char** argv)
                     auto vec = state_propagat - state;
                     solution = K_1.block<DIM_STATE,6>(0,0) * HTz + vec - G.block<DIM_STATE,6>(0,0) * vec.block<6,1>(0,0);
 
-                    int minRow, minCol;
-                    if(0)//if(V.minCoeff(&minRow, &minCol) < 1.0f)
-                    {
-                        VD(6) V = H_T_H.block<6,6>(0,0).eigenvalues().real();
-                        cout<<"!!!!!! Degeneration Happend, eigen values: "<<V.transpose()<<endl;
-                        EKF_stop_flg = true;
-                        solution.block<6,1>(9,0).setZero();
-                    }
+                    auto H_T_H_inverse = H_T_H.block< 6, 6 >( 0, 0 ).inverse();
+                    Eigen::EigenSolver<Eigen::MatrixXd> solver_rot(H_T_H_inverse.block<3,3>(0,0));
+                    Eigen::EigenSolver<Eigen::MatrixXd> solver_trans(H_T_H_inverse.block<3,3>(3,3));
+                    // Eigen::EigenSolver<Eigen::MatrixXd> solver(H_T_H.block<6,6>(0,0));
+                    // 获取特征值和特征向量矩阵
+                    Eigen::VectorXd eigenvalues_rot = solver_rot.eigenvalues().real();
+                    Eigen::MatrixXd eigenvectors_rot = solver_rot.eigenvectors().real();
+                    double minEigenvalue_rot = solver_rot.eigenvalues().real().minCoeff();
+                    Eigen::VectorXd eigenvalues_trans = solver_trans.eigenvalues().real();
+                    Eigen::MatrixXd eigenvectors_trans = solver_trans.eigenvectors().real();
+                    double minEigenvalue_trans = solver_trans.eigenvalues().real().minCoeff();
+                    for (int i = 0; i < 3; ++i) {
+                            // std::cout << eigenvalues_rot(i) <<"  ";
+                            if (eigenvalues_rot(i) >0.01) {
+                                need_v = true;
+                                // std::cout<<"rotation degrated" <<std::endl;
+                                // eigenvalues(i) = 1.0;  // 将小于6.0的特征值置为0
+                            }
+                        }
+                        // std::cout<<std::endl<<"eigenTrans: ";
+                        for (int i = 0; i < 3; ++i) {
+//                            std::cout << eigenvalues_trans(i) <<"  ";
+                            if (eigenvalues_trans(i) >0.02) {
+                                need_v = true;
+                                // std::cout<<"trans degrated" <<std::endl;
+                            }
+                        }
+                    // int minRow, minCol;
+                    // VD(3) V = H_T_H.block<3,3>(3,3).eigenvalues().real();
+                    // if(V.minCoeff(&minRow, &minCol) < 30.0f)
+                    // {
+                    //     cout<<"\033[1;32m!!!!!! Degeneration Happend, eigen values: \033[0m"<<V.transpose()<<endl;
+                    //     // EKF_stop_flg = true;
+                    //     // solution.block<6,1>(9,0).setZero();
+                    //     need_v = true;
+                    // }
 
                     state += solution;
 

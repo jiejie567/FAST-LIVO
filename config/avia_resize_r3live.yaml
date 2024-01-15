@@ -1,19 +1,19 @@
 feature_extract_enable : 0
-point_filter_num : 2
+point_filter_num : 1
 max_iteration : 10
-dense_map_enable : 1
+dense_map_enable : 0
 filter_size_surf : 0.15
 filter_size_map : 0.3
 cube_side_length : 20
 debug : 0
-grid_size : 20
-patch_size : 8
+grid_size : 30
+patch_size : 6
 img_enable : 1
 lidar_enable : 1
-outlier_threshold : 300 # 78 100 156
+outlier_threshold : 78 # 78 100 156
 ncc_en: false
 ncc_thre: 0
-img_point_cov : 100 # 1000
+img_point_cov : 10000 # 1000
 laser_point_cov : 0.001 # 0.001
 cam_fx: 453.483063
 cam_fy: 453.254913
@@ -27,7 +27,7 @@ common:
 preprocess:
     lidar_type: 1 # Livox Avia LiDAR
     scan_line: 6
-    blind: 5 # blind x m disable
+    blind: 0.1 # blind x m disable
 
 mapping:
     acc_cov_scale: 100
@@ -47,3 +47,4 @@ camera:
          -0.0126748,-0.00392989,-0.999912,
           0.999918,0.00157786,-0.012681]
     Pcl: [0.0409257, 0.0318424, -0.0927219]
+    

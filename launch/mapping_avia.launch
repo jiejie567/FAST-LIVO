@@ -3,9 +3,15 @@
 
 	<arg name="rviz" default="true" />
 
-	<!-- <arg name="bag_name" value="/media/chunran/Chunran/rosbag/mtr/xu2_new.bag"/> -->
+	<!-- <arg name="bag_name" value="/home/jeff/Downloads/dataset/Fast_LIVO_dataset/LiDAR_Degenerate.bag"/> -->
+	<!-- <arg name="bag_name" value="/home/jeff/Downloads/dataset/Fast_LIVO_dataset/hku1.bag"/> -->
+	<!-- <arg name="bag_name" value="/home/jeff/Downloads/dataset/Fast_LIVO_dataset/hku2.bag"/> -->
+	<arg name="bag_name" value="/home/jeff/Downloads/dataset/Fast_LIVO_dataset/Visual_Challenge.bag"/>
 
-	<!-- <node pkg="rosbag" type="play" name="rosbag" args="-r 1.0 -s 0.0 $(arg bag_name)"/> -->
+
+	
+
+	<node pkg="rosbag" type="play" name="rosbag" args="-r 4.0 -s 0.0 $(arg bag_name)"/>
 
 	<rosparam command="load" file="$(find fast_livo)/config/avia_resize.yaml" />
 

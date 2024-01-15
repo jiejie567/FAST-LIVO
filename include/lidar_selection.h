@@ -37,6 +37,7 @@ class LidarSelector {
     SubSparseMap* sub_sparse_map;
     double fx,fy,cx,cy;
     bool ncc_en;
+    bool need_v;
     int debug, patch_size, patch_size_total, patch_size_half;
     int count_img, MIN_IMG_COUNT;
     int NUM_MAX_ITERATIONS;
